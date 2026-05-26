@@ -1,5 +1,7 @@
+
 <!doctype html>
-<html lang="zh-CN"><head><script data-od-sandbox-shim>(function(){
+<html lang="zh-CN">
+<head><script data-od-sandbox-shim>(function(){
   function makeStore(){
     var data = {};
     var api = {
@@ -59,594 +61,1446 @@
 })();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>选择退款卡</title>
+<title>设计规范驱动的AI原型生成 · 内部分享</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
 <style>
-/* ===== CSS Custom Properties ===== */
+/* ============================================================
+   Clean Warm Deck — 6 slides
+   ============================================================ */
+
 :root {
-  --bg:        oklch(99% 0.002 240);
-  --surface:   oklch(100% 0 0);
-  --fg:        oklch(18% 0.012 250);
-  --muted:     oklch(54% 0.012 250);
-  --border:    oklch(92% 0.005 250);
-  --accent:    oklch(58% 0.18 255);
-  --accent-hex: #3B6FF6;
-  --accent-dim: oklch(58% 0.18 255 / 0.1);
-  --success:   #34C759;
-  --danger:    #FF3B30;
-  --ios-bg:    #F2F2F7;
+  --bg:       oklch(98.5% 0.003 85);
+  --surface:  oklch(100% 0 0);
+  --fg:       oklch(22% 0.012 80);
+  --muted:    oklch(48% 0.010 80);
+  --border:   oklch(90% 0.006 85);
+  --accent:   oklch(54% 0.13 38);
+  --accent-soft: oklch(92% 0.025 45);
+  --dark-bg:  oklch(24% 0.015 85);
+  --dark-fg:  oklch(94% 0.004 85);
+  --dark-muted: oklch(65% 0.010 85);
 
-  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', system-ui, sans-serif;
-  --font-body:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', system-ui, sans-serif;
+  --slide-w: 1920px;
+  --slide-h: 1080px;
+  --gutter:  90px;
+  --gap:     44px;
 
-  --phone-w: 390px;
-  --phone-h: 844px;
-  --phone-radius: 48px;
-  --status-h: 54px;
-  --nav-h: 44px;
-  --bottom-safe: 34px;
+  --fs-hero:  clamp(56px, 5.5vw, 88px);
+  --fs-xl:    clamp(40px, 4vw, 56px);
+  --fs-lg:    clamp(28px, 2.8vw, 38px);
+  --fs-md:    clamp(20px, 2vw, 26px);
+  --fs-body:  clamp(17px, 1.7vw, 22px);
+  --fs-sm:    clamp(14px, 1.3vw, 16px);
+  --fs-xs:    clamp(12px, 1.1vw, 14px);
+
+  --font-display: 'Noto Serif SC', Georgia, serif;
+  --font-body:    'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  --radius: 12px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  height: 100%;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #1a1a1a;
   font-family: var(--font-body);
-  background: #E8E8ED;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Stage */
+#stage {
+  position: fixed; z-index: 1;
+  width: var(--slide-w); height: var(--slide-h);
+  top: 50%; left: 50%;
+  transform-origin: center center;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
+
+/* Deck */
+#deck {
+  display: flex;
+  width: calc(var(--slide-w) * 6);
+  height: var(--slide-h);
+  transition: transform 0.5s var(--ease);
+  will-change: transform;
+}
+
+/* Slide */
+.slide {
+  flex: 0 0 var(--slide-w);
+  width: var(--slide-w);
+  height: var(--slide-h);
+  position: relative;
+  padding: var(--gutter);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Light */
+.slide.light {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Dark */
+.slide.dark {
+  background: var(--dark-bg);
+  color: var(--dark-fg);
+}
+.slide.dark .lead { color: var(--dark-muted); }
+.slide.dark .kicker { color: var(--accent); }
+.slide.dark .foot { color: oklch(55% 0.008 85); }
+.slide.dark .body-copy { color: var(--dark-muted); }
+.slide.dark .rule { background: var(--accent); }
+
+/* Hero light */
+.slide.hero.light {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Hero dark */
+.slide.hero.dark {
+  background: var(--dark-bg);
+  color: var(--dark-fg);
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.h-hero {
+  font-family: var(--font-display);
+  font-size: var(--fs-hero);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+.h-xl {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.h-lg {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.h-md {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.lead {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: balance;
+  max-width: 34ch;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.body-copy {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.6;
+  text-wrap: balance;
+  max-width: 38ch;
+  color: var(--muted);
+}
+
+.foot {
+  position: absolute;
+  bottom: 50px;
+  left: var(--gutter);
+  right: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: oklch(55% 0.008 85);
+  letter-spacing: 0.06em;
+  display: flex;
+  justify-content: space-between;
+}
+
+.rule {
+  width: 48px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 20px 0;
+}
+
+.slide-nb {
+  position: absolute;
+  top: 48px;
+  right: var(--gutter);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  opacity: 0.3;
+  letter-spacing: 0.06em;
+}
+
+/* ============================================================
+   GRIDS
+   ============================================================ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  width: 100%;
+  align-items: start;
+}
+.grid-2-5-7 {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: var(--gap);
+  width: 100%;
+  align-items: start;
+}
+.grid-2-6-6 {
+  display: grid;
+  grid-template-columns: 6fr 6fr;
+  gap: var(--gap);
+  width: 100%;
+  align-items: start;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gap);
+  width: 100%;
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+
+/* Callout / quote */
+.callout {
+  border-left: 3px solid var(--accent);
+  padding: 14px 0 14px 24px;
+  margin-top: 28px;
+  max-width: 36ch;
+}
+.callout blockquote {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--fg);
+}
+.callout-src {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  margin-top: 10px;
+  opacity: 0.5;
+}
+
+/* Stat card */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.stat-nb {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+.stat-note {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+/* Tool card */
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.tool-card:hover { border-color: var(--accent); box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+.tool-card .icon-wrap {
+  width: 44px; height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  -webkit-font-smoothing: antialiased;
-  user-select: none;
-  -webkit-user-select: none;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  color: var(--accent);
+}
+.tool-card h4 {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.tool-card p {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  opacity: 0.6;
+}
+.tool-card .tool-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0.4;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tool-card .tool-tag span {
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
 }
 
-.phone-frame {
-  width: var(--phone-w); height: var(--phone-h);
-  background: #000; border-radius: var(--phone-radius);
-  padding: 12px; position: relative;
-  box-shadow: 0 0 0 2px #1a1a1a, 0 0 0 4px #0d0d0d, 0 20px 60px rgba(0,0,0,0.35);
+/* Pipeline */
+.pipeline-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 36px;
+  width: 100%;
+}
+.pipeline-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+.pipeline {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  align-items: stretch;
+}
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 22px;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 0;
+  position: relative;
+  background: var(--surface);
+}
+.step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.step:last-child { border-right: 1px solid var(--border); border-radius: 0 var(--radius) var(--radius) 0; }
+.step-nb {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+  opacity: 0.8;
+}
+.step-title {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.step-desc {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  opacity: 0.6;
+}
+.step-arrow {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  z-index: 1;
+}
+.step:last-child .step-arrow { display: none; }
+.slide.dark .step {
+  background: oklch(28% 0.012 85);
+  border-color: oklch(35% 0.01 85);
+}
+.slide.dark .step-title, .slide.dark .step-nb { color: var(--dark-fg); }
+.slide.dark .step-desc { opacity: 0.5; }
+
+/* Note badge */
+.note-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  background: oklch(96% 0.025 55);
+  color: oklch(40% 0.10 45);
+  margin-top: 24px;
+}
+
+/* ============================================================
+   VISUAL — CHAOS MOCKUPS (Slide 02)
+   ============================================================ */
+.chaos-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+.chaos-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chaos-frame {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+}
+.chaos-header {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.chaos-dot { width: 7px; height: 7px; border-radius: 50%; }
+.chaos-inner {
+  flex: 1;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chaos-block {
+  height: 8px;
+  border-radius: 4px;
+}
+.chaos-card {
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-top: 4px;
+}
+.chaos-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  opacity: 0.35;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   MOCKUP DEVICE (Slide 03, 06)
+   ============================================================ */
+.mockup-device {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  flex: 1;
+}
+.mockup-top {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.mockup-dot { width: 6px; height: 6px; border-radius: 50%; }
+.mockup-body {
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mockup-line {
+  height: 6px;
+  border-radius: 3px;
+}
+.mockup-box {
+  border-radius: 5px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.mockup-box-dot {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.mockup-row {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+}
+
+/* ============================================================
+   DIVIDER DOT
+   ============================================================ */
+.dot-sep {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
   flex-shrink: 0;
 }
 
-.phone-screen {
-  width:100%; height:100%; background: var(--ios-bg);
-  border-radius: calc(var(--phone-radius) - 12px);
-  overflow: hidden; position: relative;
-  display: flex; flex-direction: column;
+/* ============================================================
+   TOKEN CHIPS (Slide 03)
+   ============================================================ */
+.token-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.token-swatch {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.token-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+.token-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.token-card .token-hd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2px;
 }
 
-/* Dynamic Island */
-.dynamic-island {
-  position:absolute; top:10px; left:50%; transform:translateX(-50%);
-  width:126px; height:36px; background:#000; border-radius:20px; z-index:100;
+/* ============================================================
+   FLOW ARROWS + ICONS (Slide 04, 05)
+   ============================================================ */
+.flow-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 28px;
+  width: 100%;
+}
+.flow-icons .fi-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 160px;
+}
+.flow-icons .fi-icon {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.flow-icons .fi-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  opacity: 0.5;
+}
+.flow-icons .fi-arrow {
+  font-size: 18px;
+  color: var(--accent);
+  opacity: 0.5;
+  margin-top: -28px;
+  flex-shrink: 0;
 }
 
-/* Status Bar */
-.status-bar {
-  height:var(--status-h); padding:14px 28px 0;
-  display:flex; align-items:center; justify-content:space-between;
-  font-size:12px; font-weight:600; color:#000; flex-shrink:0; position:relative; z-index:50;
+/* ============================================================
+   CAVEAT BOX (Slide 05)
+   ============================================================ */
+.caveat-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 24px;
+  border-radius: var(--radius);
+  background: oklch(96% 0.02 70);
+  border: 1px solid oklch(88% 0.04 65);
+  margin-top: 36px;
+  width: 100%;
 }
-.status-bar .time { width:54px; text-align:center; }
-.status-bar .icons { display:flex; align-items:center; gap:6px; }
-.status-bar .icons svg { width:16px; height:16px; }
+.caveat-box .caveat-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: oklch(54% 0.13 38);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.caveat-box .caveat-text {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: oklch(30% 0.04 60);
+}
+.caveat-box .caveat-text strong { color: oklch(25% 0.06 50); }
 
-/* Nav */
-.nav-bar {
-  height:var(--nav-h); display:flex; align-items:center;
-  padding:0 8px; flex-shrink:0; position:relative; z-index:50;
+/* ============================================================
+   QUALITY METER (Slide 05)
+   ============================================================ */
+.quality-meter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  width: 100%;
 }
-.nav-back {
-  width:44px; height:44px; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; border-radius:50%; transition:background 0.15s; flex-shrink:0;
+.quality-meter .qm-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.5;
+  min-width: 80px;
+  text-align: right;
 }
-.nav-back:active { background:rgba(0,0,0,0.08); }
-.nav-back svg { width:20px; height:20px; color:var(--accent-hex); }
-.nav-title {
-  font-size:17px; font-weight:600; color:var(--fg); flex:1;
-  text-align:center; margin-right:44px; letter-spacing:0.02em;
+.quality-meter .qm-bar-bg {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
 }
-
-/* Content */
-.content-area {
-  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  padding:0 16px; scroll-behavior:smooth;
-}
-.content-area::-webkit-scrollbar { display:none; }
-
-.section-header {
-  font-size:13px; font-weight:500; color:var(--muted);
-  text-transform:uppercase; letter-spacing:0.04em; padding:8px 4px 10px;
-}
-
-/* Card list */
-.card-list { display:flex; flex-direction:column; gap:8px; }
-
-.bank-card {
-  display:flex; align-items:center; background:var(--surface);
-  border-radius:14px; padding:14px; cursor:pointer;
-  transition:all 0.18s ease; border:2px solid transparent;
-  position:relative; gap:12px; -webkit-tap-highlight-color:transparent;
-}
-.bank-card:active { transform:scale(0.985); background:oklch(97% 0.003 250); }
-.bank-card.selected {
-  border-color:var(--accent-hex); background:var(--accent-dim);
-}
-
-.bank-icon {
-  width:44px; height:44px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:700; color:#fff; flex-shrink:0;
-}
-
-.bank-info { flex:1; min-width:0; }
-.bank-name { font-size:16px; font-weight:500; color:var(--fg); line-height:1.3; }
-.bank-number { font-size:13px; color:var(--muted); line-height:1.4; margin-top:2px; }
-
-/* Radio */
-.radio-btn {
-  width:24px; height:24px; border-radius:50%;
-  border:2px solid oklch(80% 0.008 250); flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  transition:all 0.2s ease;
-}
-.bank-card.selected .radio-btn { border-color:var(--accent-hex); background:var(--accent-hex); }
-.bank-card.selected .radio-btn::after {
-  content:''; display:block; width:6px; height:10px;
-  border:solid #fff; border-width:0 2px 2px 0;
-  border-radius:0; background:transparent;
-  transform:rotate(45deg) translateY(-1px); opacity:1;
+.quality-meter .qm-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
 }
 
-/* Add Card Row */
-.add-card-row {
-  display:flex; align-items:center; gap:12px;
-  background:var(--surface); border-radius:14px;
-  padding:16px 14px; cursor:pointer;
-  transition:all 0.18s ease; margin-top:8px;
-  border:1.5px dashed oklch(85% 0.01 250);
-  -webkit-tap-highlight-color:transparent;
+/* ============================================================
+   ENRICHED QUOTE (Slide 06)
+   ============================================================ */
+.enriched-quote {
+  position: relative;
+  padding-left: 28px;
+  border-left: 3px solid var(--accent);
 }
-.add-card-row:active { transform:scale(0.985); background:oklch(97% 0.005 250); }
-
-.add-card-icon {
-  width:44px; height:44px; border-radius:50%;
-  background:var(--accent-dim); display:flex;
-  align-items:center; justify-content:center; flex-shrink:0;
+.enriched-quote blockquote {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: -0.005em;
 }
-.add-card-icon svg { width:22px; height:22px; color:var(--accent-hex); }
-
-.add-card-text { flex:1; }
-.add-card-title { font-size:15px; font-weight:500; color:var(--accent-hex); }
-.add-card-sub { font-size:12px; color:var(--muted); margin-top:2px; }
-
-.add-card-arrow svg { width:16px; height:16px; color:oklch(70% 0.01 250); }
-
-.card-list-divider { height:1px; background:var(--border); margin:4px 0; }
-
-/* Empty State */
-.empty-state {
-  display:none; flex-direction:column; align-items:center;
-  justify-content:center; padding:60px 40px 40px; text-align:center;
-  animation:fadeInUp 0.4s ease;
-}
-.empty-state.visible { display:flex; }
-.card-list.hidden, .add-card-row.hidden, .card-list-divider.hidden { display:none; }
-
-@keyframes fadeInUp {
-  from { opacity:0; transform:translateY(16px); }
-  to   { opacity:1; transform:translateY(0); }
+.enriched-quote .eq-author {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  margin-top: 16px;
+  opacity: 0.45;
 }
 
-.empty-title { font-size:17px; font-weight:600; color:var(--fg); margin-bottom:8px; }
-.empty-desc { font-size:14px; color:var(--muted); line-height:1.6; max-width:250px; }
-.empty-desc strong { color:var(--fg); font-weight:600; }
-
-/* Bottom Action */
-.bottom-action {
-  padding:12px 16px; padding-bottom:calc(12px + var(--bottom-safe));
-  flex-shrink:0; background:var(--ios-bg); position:relative; z-index:10;
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+#nav-dots {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 10px;
 }
-
-.btn-primary {
-  width:100%; height:50px; border-radius:14px; border:none;
-  font-size:17px; font-weight:600; cursor:pointer;
-  transition:all 0.18s ease; font-family:var(--font-body);
-  letter-spacing:0.02em; -webkit-tap-highlight-color:transparent;
-  display:flex; align-items:center; justify-content:center; gap:8px;
+#nav-dots button {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s;
 }
-.btn-primary.active { background:var(--accent-hex); color:#fff; }
-.btn-primary.disabled { background:oklch(88% 0.008 250); color:oklch(65% 0.01 250); cursor:not-allowed; pointer-events:none; }
-.btn-primary:active:not(.disabled) { transform:scale(0.97); opacity:0.85; }
-.btn-primary.loading { pointer-events:none; }
-
-.btn-spinner {
-  display:none; width:20px; height:20px;
-  border:2.5px solid rgba(255,255,255,0.3); border-top-color:#fff;
-  border-radius:50%; animation:spin 0.7s linear infinite;
+#nav-dots button.active {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.85);
+  transform: scale(1.3);
 }
-.btn-primary.loading .btn-spinner { display:block; }
-.btn-primary.loading .btn-label { opacity:0.7; }
-
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* Home Indicator */
-.home-indicator {
-  position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
-  width:134px; height:5px; background:#000; border-radius:100px;
-  z-index:100; opacity:0.2;
+#counter {
+  position: fixed;
+  bottom: 28px;
+  right: 32px;
+  z-index: 10;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.08em;
 }
-
-/* Toast */
-.toast {
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) translateY(20px);
-  background:rgba(0,0,0,0.82); color:#fff; padding:12px 24px;
-  border-radius:12px; font-size:14px; font-weight:500;
-  opacity:0; pointer-events:none; z-index:200; white-space:nowrap;
-  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+#index-toggle {
+  position: fixed;
+  bottom: 28px;
+  left: 32px;
+  z-index: 10;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.08em;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
 }
-.toast.show { opacity:1; transform:translate(-50%,-50%) translateY(0); }
-
-/* Success Panel */
-.success-panel {
-  position:absolute; inset:0; z-index:150;
-  display:flex; flex-direction:column;
-  pointer-events:none; opacity:0;
-  transition:opacity 0.25s ease;
-  border-radius:calc(var(--phone-radius) - 12px);
-  overflow:hidden;
+#index-toggle:hover { border-color: rgba(255,255,255,0.6); color: rgba(255,255,255,0.8); }
+#index-overlay {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(10,10,10,0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s;
 }
-.success-panel.show { opacity:1; pointer-events:auto; }
-
-.success-panel-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.35); }
-
-.success-panel-sheet {
-  position:absolute; bottom:0; left:0; right:0;
-  background:var(--surface); border-radius:24px 24px 0 0;
-  padding:28px 24px; padding-bottom:calc(28px + var(--bottom-safe));
-  transform:translateY(100%);
-  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
-  text-align:center;
+#index-overlay.open { opacity: 1; pointer-events: auto; }
+#index-overlay .idx-item {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: color 0.25s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
-.success-panel.show .success-panel-sheet { transform:translateY(0); }
-
-.success-panel-icon {
-  width:64px; height:64px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  margin:0 auto 16px;
-  font-size:24px; font-weight:700; color:#fff;
-  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.25s both;
+#index-overlay .idx-item:hover { color: #fff; }
+#index-overlay .idx-nb {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  opacity: 0.4;
+  min-width: 28px;
+  text-align: right;
 }
-
-@keyframes popIn {
-  from { transform:scale(0); opacity:0; }
-  to   { transform:scale(1); opacity:1; }
+#index-overlay .idx-close {
+  position: absolute;
+  top: 40px;
+  right: 48px;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.6);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: all 0.3s;
 }
+#index-overlay .idx-close:hover { border-color: #fff; color: #fff; }
 
-.success-panel-title {
-  font-size:18px; font-weight:700; color:var(--fg);
-  margin-bottom:4px; letter-spacing:0.01em;
+/* Speaker notes */
+#notes-panel {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 130px;
+  background: rgba(20,20,20,0.95);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  z-index: 15;
+  transform: translateY(100%);
+  transition: transform 0.35s;
+  padding: 18px 28px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.75);
+  overflow-y: auto;
+  display: flex;
+  gap: 12px;
 }
-.success-panel-desc { font-size:14px; color:var(--muted); line-height:1.5; margin-bottom:4px; }
+#notes-panel.open { transform: translateY(0); }
+#notes-panel .notes-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  min-width: 60px;
+  opacity: 0.8;
+  padding-top: 2px;
+}
+#notes-toggle {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 16;
+  background: rgba(30,30,30,0.9);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 5px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#notes-toggle:hover { border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.8); }
+#notes-toggle.active { bottom: 138px; }
 
-.success-panel-card {
-  display:inline-flex; align-items:center; gap:8px;
-  background:var(--ios-bg); border-radius:10px;
-  padding:10px 16px; margin-top:12px;
-}
-.success-panel-card .mini-icon {
-  width:28px; height:28px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; color:#fff;
-}
-.success-panel-card .mini-info { text-align:left; }
-.success-panel-card .mini-name { font-size:14px; font-weight:500; color:var(--fg); }
-.success-panel-card .mini-num { font-size:12px; color:var(--muted); }
-
-.success-panel-close {
-  margin-top:20px; width:100%; height:44px;
-  border-radius:12px; border:none; background:var(--accent-hex);
-  color:#fff; font-size:16px; font-weight:600;
-  cursor:pointer; font-family:var(--font-body);
-  transition:all 0.15s ease;
-  -webkit-tap-highlight-color:transparent;
-}
-.success-panel-close:active { transform:scale(0.97); opacity:0.85; }
-
-/* Demo hint */
-.demo-hint {
-  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-  font-size:11px; color:oklch(60% 0.02 250); letter-spacing:0.03em;
-  text-align:center; pointer-events:none;
+/* Print */
+@media print {
+  html, body { overflow: visible; background: #fff; }
+  #stage { position: static; transform: none; box-shadow: none; width: auto; height: auto; }
+  #deck { display: block; width: auto; height: auto; transform: none !important; }
+  .slide { break-after: page; width: 100%; height: 100vh; flex: none; }
+  #nav-dots, #counter, #index-toggle, #index-overlay, #notes-panel, #notes-toggle { display: none; }
 }
 </style>
 </head>
 <body>
 
-<div class="phone-frame">
-  <div class="phone-screen" id="phoneScreen">
+<div id="stage">
+  <div id="deck">
 
-    <div class="dynamic-island"></div>
+    <!-- ════════════════════════════════════════════
+         01 · 封面 (Light)
+         ════════════════════════════════════════════ -->
+    <section class="slide light" data-screen-label="01 封面" data-speaker-notes="轻松开场——今天分享一个实用的方法：用设计规范引导AI生成原型，减少风格漂移。不保证100%一致，但能省掉大量修图时间。">
+      <span class="slide-nb">01</span>
 
-    <!-- Status Bar -->
-    <div class="status-bar">
-      <span class="time">9:41</span>
-      <span class="icons">
-        <svg viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="0.6"></rect><rect x="5" y="5" width="3" height="7" rx="0.6"></rect><rect x="10" y="2" width="3" height="10" rx="0.6"></rect><rect x="15" y="0" width="3" height="12" rx="0.6"></rect></svg>
-        <svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 10.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM4.76 8.26a4.58 4.58 0 016.48 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path><path d="M1.5 5.5a9.2 9.2 0 0113 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
-        <svg viewBox="0 0 28 14" fill="none"><rect x="1" y="1" width="22" height="12" rx="3" stroke="currentColor" stroke-width="1.2"></rect><rect x="3" y="3" width="16" height="8" rx="1.5" fill="currentColor"></rect><rect x="24" y="4" width="2.5" height="6" rx="1.2" fill="currentColor" opacity="0.4"></rect></svg>
-      </span>
-    </div>
+      <div class="kicker">AI × 设计规范</div>
+      <h1 class="h-hero" style="max-width:16ch;">用设计规范<br>引导AI生成原型</h1>
+      <p class="lead" style="margin-top:24px;max-width:30ch;">
+        一种务实的方法——让AI产出更接近设计系统的原型，
+        不一定完美，但能少改很多
+      </p>
 
-    <!-- Nav -->
-    <div class="nav-bar">
-      <div class="nav-back" id="btnBack" title="返回">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 4 7 12 15 20"></polyline></svg>
-      </div>
-      <div class="nav-title">选择退款卡</div>
-    </div>
-
-    <!-- Content -->
-    <div class="content-area" id="contentArea">
-
-      <!-- 有卡：卡片列表 -->
-      <div class="card-list" id="cardList">
-        <div class="section-header">请选择一张可用的银行卡，退款将退至该卡</div>
+      <div style="display:flex;gap:28px;margin-top:32px;font-family:var(--font-mono);font-size:var(--fs-sm);color:var(--muted);letter-spacing:0.04em;">
+        <span>团队内部分享</span>
+        <span class="dot-sep" style="align-self:center;"></span>
+        <span>~6 min read</span>
+        <span class="dot-sep" style="align-self:center;"></span>
+        <span>2025</span>
       </div>
 
-      <div class="card-list-divider" id="cardListDivider"></div>
+      <div class="foot">
+        <span>设计规范驱动的AI原型生成</span>
+        <span>01 / 06</span>
+      </div>
+    </section>
 
-      <!-- 有卡：去绑卡入口 -->
-      <div class="add-card-row" id="addCardRow">
-        <div class="add-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2.5"></rect><line x1="12" y1="9" x2="12" y2="15"></line><line x1="9" y1="12" x2="15" y2="12"></line></svg>
+    <!-- ════════════════════════════════════════════
+         02 · 问题 (Light)
+         ════════════════════════════════════════════ -->
+    <section class="slide light" data-screen-label="02 问题" data-speaker-notes="问题很直观：同一句 prompt，三次生成三个风格。不是AI不够好，是我们没有给它规则。右边的三列对比图让这个痛处一目了然。">
+      <span class="slide-nb">02</span>
+
+      <h2 class="h-xl">同一句 prompt<br>三次生成，三种风格</h2>
+      <div class="rule"></div>
+
+      <div class="grid-2-5-7" style="margin-top:32px;">
+        <!-- Left: explanation -->
+        <div>
+          <p class="body-copy">
+            没有设计规范时，AI 自由发挥——<strong style="font-weight:600;">颜色随机、字体混搭、圆角各异</strong>。
+            设计师不是在审核设计，是在修图。
+          </p>
+          <div class="callout">
+            <blockquote>"大多数时间花在统一风格上，而不是迭代功能。"</blockquote>
+            <div class="callout-src">—— 设计师的真实反馈</div>
+          </div>
+          <div style="display:flex;gap:36px;margin-top:28px;">
+            <div class="stat-card">
+              <span class="stat-label">风格漂移</span>
+              <span class="stat-nb" style="font-size:var(--fs-lg);">经常发生</span>
+              <span class="stat-note">同一 prompt 产出差异明显</span>
+            </div>
+          </div>
         </div>
-        <div class="add-card-text">
-          <div class="add-card-title">添加新银行卡</div>
-          <div class="add-card-sub">绑定后可接收退款</div>
+
+        <!-- Right: three chaotic columns -->
+        <div class="chaos-row">
+          <div class="chaos-col">
+            <div class="chaos-frame">
+              <div class="chaos-header" style="background:oklch(96% 0.015 85);">
+                <span class="chaos-dot" style="background:oklch(55% 0.16 25);"></span>
+                <span class="chaos-dot" style="background:oklch(70% 0.1 85);"></span>
+                <span class="chaos-dot" style="background:oklch(60% 0.12 160);"></span>
+              </div>
+              <div class="chaos-inner">
+                <div class="chaos-block" style="background:oklch(55% 0.15 25);width:45%;"></div>
+                <div class="chaos-block" style="background:oklch(85% 0.01 90);width:78%;height:7px;"></div>
+                <div class="chaos-block" style="background:oklch(88% 0.01 90);width:62%;height:7px;"></div>
+                <div class="chaos-card" style="background:oklch(55% 0.15 25);color:#fff;font-size:10px;">Button →</div>
+                <div class="chaos-card" style="background:oklch(96% 0.015 85);display:flex;gap:6px;align-items:center;">
+                  <div style="width:18px;height:18px;border-radius:50%;background:oklch(70% 0.12 85);"></div>
+                  <div class="chaos-block" style="background:oklch(75% 0.02 90);width:55%;height:6px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="chaos-label">生成 #1 · 暖色大圆角</div>
+          </div>
+          <div class="chaos-col">
+            <div class="chaos-frame">
+              <div class="chaos-header" style="background:oklch(94% 0.005 250);">
+                <span class="chaos-dot" style="background:oklch(55% 0.16 255);"></span>
+                <span class="chaos-dot" style="background:oklch(60% 0.12 200);"></span>
+                <span class="chaos-dot" style="background:oklch(65% 0.1 180);"></span>
+              </div>
+              <div class="chaos-inner">
+                <div class="chaos-block" style="background:oklch(50% 0.16 255);width:45%;"></div>
+                <div class="chaos-block" style="background:oklch(82% 0.01 250);width:80%;height:7px;"></div>
+                <div class="chaos-block" style="background:oklch(87% 0.01 250);width:65%;height:7px;"></div>
+                <div class="chaos-card" style="background:oklch(50% 0.16 255);color:#fff;font-size:10px;">Submit</div>
+                <div class="chaos-card" style="background:oklch(96% 0.004 250);display:flex;gap:6px;align-items:center;">
+                  <div style="width:18px;height:18px;border-radius:3px;background:oklch(60% 0.14 240);"></div>
+                  <div class="chaos-block" style="background:oklch(75% 0.01 250);width:60%;height:6px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="chaos-label">生成 #2 · 冷色直角</div>
+          </div>
+          <div class="chaos-col">
+            <div class="chaos-frame">
+              <div class="chaos-header" style="background:oklch(95% 0.01 140);">
+                <span class="chaos-dot" style="background:oklch(55% 0.18 145);"></span>
+                <span class="chaos-dot" style="background:oklch(65% 0.14 130);"></span>
+                <span class="chaos-dot" style="background:oklch(50% 0.1 100);"></span>
+              </div>
+              <div class="chaos-inner">
+                <div class="chaos-block" style="background:oklch(50% 0.18 145);width:45%;"></div>
+                <div class="chaos-block" style="background:oklch(82% 0.02 140);width:75%;height:7px;"></div>
+                <div class="chaos-block" style="background:oklch(88% 0.01 140);width:60%;height:7px;"></div>
+                <div class="chaos-card" style="background:oklch(50% 0.18 145);color:#fff;font-size:10px;">确认</div>
+                <div class="chaos-card" style="background:oklch(97% 0.01 140);display:flex;gap:6px;align-items:center;">
+                  <div style="width:18px;height:18px;border-radius:8px;background:oklch(60% 0.16 150);"></div>
+                  <div class="chaos-block" style="background:oklch(70% 0.02 140);width:50%;height:6px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="chaos-label">生成 #3 · 绿色混合</div>
+          </div>
         </div>
-        <div class="add-card-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 5 16 12 9 19"></polyline></svg>
+      </div>
+
+      <div class="foot">
+        <span>设计规范驱动的AI原型生成</span>
+        <span>02 / 06</span>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         03 · 方案 (Dark)
+         ════════════════════════════════════════════ -->
+    <section class="slide dark" data-screen-label="03 方案" data-speaker-notes="核心思路简单：把 Figma 设计规范转成 AI 可读的 design.md，作为所有原型生成的'参考系'。注意这里说的是参考系而不是绝对规则——效果取决于规范的完整度和产品需求文档的清晰度。">
+      <span class="slide-nb">03</span>
+
+      <h2 class="h-xl">给AI一个<br>靠谱的参考系</h2>
+      <div class="rule"></div>
+
+      <div class="grid-2-6-6" style="margin-top:32px;align-items:center;">
+        <!-- Left: token extraction -->
+        <div class="token-card" style="background:oklch(28% 0.012 85);border-color:oklch(36% 0.01 85);">
+          <span class="token-hd">从 Figma 提取 Design Tokens</span>
+          <div class="token-chip">
+            <span class="token-swatch" style="background:oklch(97% 0.004 95);"></span>
+            <span class="token-name" style="color:oklch(80% 0.005 95);">--bg-page</span>
+          </div>
+          <div class="token-chip">
+            <span class="token-swatch" style="background:oklch(22% 0.012 80);"></span>
+            <span class="token-name" style="color:oklch(80% 0.005 95);">--fg-primary</span>
+          </div>
+          <div class="token-chip">
+            <span class="token-swatch" style="background:oklch(54% 0.13 38);"></span>
+            <span class="token-name" style="color:oklch(80% 0.005 95);">--accent</span>
+          </div>
+          <div class="token-chip">
+            <span class="token-swatch" style="background:oklch(90% 0.006 85);"></span>
+            <span class="token-name" style="color:oklch(80% 0.005 95);">--border</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:10px;opacity:0.35;margin-top:4px;color:oklch(70% 0.005 95);">
+            font-display · radius · spacing
+          </div>
+        </div>
+
+        <!-- Right: explanation + unified mocks -->
+        <div>
+          <p class="lead" style="color:var(--dark-muted);margin-bottom:20px;max-width:28ch;">
+            转化为 <strong style="color:var(--accent);">design.md</strong>，
+            作为原型生成的参考系——不是硬性锁死，而是统一方向
+          </p>
+
+          <div class="mockup-row">
+            <div class="mockup-device" style="background:oklch(30% 0.012 85);border-color:oklch(38% 0.01 85);">
+              <div class="mockup-top" style="background:oklch(26% 0.012 85);border-color:oklch(34% 0.01 85);">
+                <span class="mockup-dot" style="background:oklch(54% 0.13 38);"></span>
+                <span class="mockup-dot" style="background:oklch(65% 0.06 85);"></span>
+                <span class="mockup-dot" style="background:oklch(60% 0.08 80);"></span>
+              </div>
+              <div class="mockup-body">
+                <div class="mockup-line w30" style="background:oklch(54% 0.13 38);width:35%;"></div>
+                <div class="mockup-line w70" style="background:oklch(68% 0.005 95);width:75%;"></div>
+                <div class="mockup-line w50" style="background:oklch(68% 0.005 95);width:55%;"></div>
+                <div class="mockup-box" style="background:oklch(34% 0.012 85);">
+                  <div class="mockup-box-dot" style="background:oklch(54% 0.13 38);"></div>
+                  <div class="mockup-line w50" style="background:oklch(58% 0.005 95);width:50%;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mockup-device" style="background:oklch(30% 0.012 85);border-color:oklch(38% 0.01 85);">
+              <div class="mockup-top" style="background:oklch(26% 0.012 85);border-color:oklch(34% 0.01 85);">
+                <span class="mockup-dot" style="background:oklch(54% 0.13 38);"></span>
+                <span class="mockup-dot" style="background:oklch(65% 0.06 85);"></span>
+                <span class="mockup-dot" style="background:oklch(60% 0.08 80);"></span>
+              </div>
+              <div class="mockup-body">
+                <div class="mockup-line w40" style="background:oklch(54% 0.13 38);width:40%;"></div>
+                <div class="mockup-line w90" style="background:oklch(68% 0.005 95);width:88%;"></div>
+                <div class="mockup-line w60" style="background:oklch(68% 0.005 95);width:62%;"></div>
+                <div class="mockup-box" style="background:oklch(34% 0.012 85);">
+                  <div class="mockup-box-dot" style="background:oklch(54% 0.13 38);"></div>
+                  <div class="mockup-line w60" style="background:oklch(58% 0.005 95);width:58%;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mockup-device" style="background:oklch(30% 0.012 85);border-color:oklch(38% 0.01 85);">
+              <div class="mockup-top" style="background:oklch(26% 0.012 85);border-color:oklch(34% 0.01 85);">
+                <span class="mockup-dot" style="background:oklch(54% 0.13 38);"></span>
+                <span class="mockup-dot" style="background:oklch(65% 0.06 85);"></span>
+                <span class="mockup-dot" style="background:oklch(60% 0.08 80);"></span>
+              </div>
+              <div class="mockup-body">
+                <div class="mockup-line w35" style="background:oklch(54% 0.13 38);width:38%;"></div>
+                <div class="mockup-line w80" style="background:oklch(68% 0.005 95);width:80%;"></div>
+                <div class="mockup-line w55" style="background:oklch(68% 0.005 95);width:52%;"></div>
+                <div class="mockup-box" style="background:oklch(34% 0.012 85);">
+                  <div class="mockup-box-dot" style="background:oklch(54% 0.13 38);"></div>
+                  <div class="mockup-line w55" style="background:oklch(58% 0.005 95);width:48%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;opacity:0.3;text-align:center;margin-top:10px;color:oklch(68% 0.005 95);">
+            同一套 Token · 不同页面 · 风格趋同（非 100% 一致）
+          </p>
         </div>
       </div>
 
-      <!-- 无卡：空状态提示 -->
-      <div class="empty-state" id="emptyState">
-        <div class="empty-title">暂无可用的退款银行卡</div>
-        <div class="empty-desc">您需要先<strong>绑定一张银行卡</strong>，才能完成退款。点击下方按钮前往绑卡。</div>
+      <div class="foot">
+        <span>设计规范驱动的AI原型生成</span>
+        <span>03 / 06</span>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         04 · 工具链 (Light)
+         ════════════════════════════════════════════ -->
+    <section class="slide light" data-screen-label="04 工具链" data-speaker-notes="四件工具各司其职。Codex 的 Figma 插件读规范，design-generator Skill 生成 design.md，OpenDesign 内置规范后直接生成原型。链路清晰，每一步都可复用。">
+      <span class="slide-nb">04</span>
+
+      <h2 class="h-xl">四件工具<br>一条链路</h2>
+      <div class="rule"></div>
+
+      <div class="grid-4" style="margin-top:36px;">
+        <div class="tool-card">
+          <div class="icon-wrap"><i data-lucide="code-2" style="width:22px;height:22px;"></i></div>
+          <h4>Codex</h4>
+          <p>通过 Figma 插件读取设计规范链接</p>
+          <div class="tool-tag"><span>Figma link</span> → 读取规范</div>
+        </div>
+        <div class="tool-card">
+          <div class="icon-wrap"><i data-lucide="figma" style="width:22px;height:22px;"></i></div>
+          <h4>Figma</h4>
+          <p>设计规范的 Source of Truth</p>
+          <div class="tool-tag"><span>Design Spec</span> → 真实来源</div>
+        </div>
+        <div class="tool-card">
+          <div class="icon-wrap"><i data-lucide="layers" style="width:22px;height:22px;"></i></div>
+          <h4>OpenDesign</h4>
+          <p>原型生成环境，内置 design.md</p>
+          <div class="tool-tag"><span>design.md</span> → 系统风格</div>
+        </div>
+        <div class="tool-card">
+          <div class="icon-wrap"><i data-lucide="wand-2" style="width:22px;height:22px;"></i></div>
+          <h4>Skills</h4>
+          <p>figma · design-generator 等可复用模块</p>
+          <div class="tool-tag"><span>能力模块</span> → 可复用</div>
+        </div>
       </div>
 
-    </div>
-
-    <!-- Bottom Action -->
-    <div class="bottom-action" id="bottomAction">
-      <button class="btn-primary disabled" id="btnConfirm">
-        <span class="btn-label" id="btnLabel">请选择退款卡</span>
-        <span class="btn-spinner"></span>
-      </button>
-    </div>
-
-    <!-- Home Indicator -->
-    <div class="home-indicator"></div>
-
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
-
-    <!-- Success Panel -->
-    <div class="success-panel" id="successPanel">
-      <div class="success-panel-backdrop"></div>
-      <div class="success-panel-sheet">
-        <div class="success-panel-icon" id="successIcon"></div>
-        <div class="success-panel-title">请耐心等待</div>
-        <div class="success-panel-desc">款项将退回到以下银行卡</div>
-        <div class="success-panel-card" id="successCard"></div>
-        <button class="success-panel-close" id="btnSuccessClose">完成</button>
+      <div class="flow-icons">
+        <div class="fi-step">
+          <div class="fi-icon"><i data-lucide="figma" style="width:22px;height:22px;"></i></div>
+          <span class="fi-label">读取规范</span>
+        </div>
+        <span class="fi-arrow">→</span>
+        <div class="fi-step">
+          <div class="fi-icon"><i data-lucide="file-code-2" style="width:22px;height:22px;"></i></div>
+          <span class="fi-label">生成 design.md</span>
+        </div>
+        <span class="fi-arrow">→</span>
+        <div class="fi-step">
+          <div class="fi-icon"><i data-lucide="layers" style="width:22px;height:22px;"></i></div>
+          <span class="fi-label">内置为系统风格</span>
+        </div>
+        <span class="fi-arrow">→</span>
+        <div class="fi-step">
+          <div class="fi-icon"><i data-lucide="monitor-smartphone" style="width:22px;height:22px;"></i></div>
+          <span class="fi-label">生成原型</span>
+        </div>
       </div>
-    </div>
 
-  </div>
+      <div class="foot">
+        <span>设计规范驱动的AI原型生成</span>
+        <span>04 / 06</span>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         05 · 流程 + 关键认知 (Light)
+         ════════════════════════════════════════════ -->
+    <section class="slide light" data-screen-label="05 流程与认知" data-speaker-notes="这是最核心的一页。上半部分展示4步工作流；下半部分坦诚地讲两个关键认知：① 设计规范只能在一定程度下规范原型，不会 100% 一致；② 输出效果取决于 Figma 规范的完整度和产品需求文档的质量。输入垃圾、输出垃圾。">
+      <span class="slide-nb">05</span>
+
+      <h2 class="h-xl" style="font-size:var(--fs-lg);">四步工作流</h2>
+      <div class="rule"></div>
+
+      <!-- Pipeline -->
+      <div class="pipeline-section" style="margin-top:20px;">
+        <div class="pipeline">
+          <div class="step">
+            <span class="step-nb">01</span>
+            <span class="step-title">读取规范</span>
+            <span class="step-desc">Codex Figma 插件<br>读取设计规范链接</span>
+            <span class="step-arrow">→</span>
+          </div>
+          <div class="step">
+            <span class="step-nb">02</span>
+            <span class="step-title">生成描述</span>
+            <span class="step-desc">design-generator skill<br>输出 design.md</span>
+            <span class="step-arrow">→</span>
+          </div>
+          <div class="step">
+            <span class="step-nb">03</span>
+            <span class="step-title">内置规范</span>
+            <span class="step-desc">design.md 内置到<br>OpenDesign 系统风格</span>
+            <span class="step-arrow">→</span>
+          </div>
+          <div class="step">
+            <span class="step-nb">04</span>
+            <span class="step-title">生成原型</span>
+            <span class="step-desc">OpenDesign 产出<br>符合规范的界面</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key caveats -->
+      <div class="caveat-box">
+        <div class="caveat-icon">!</div>
+        <div class="caveat-text">
+          <strong>两个坦诚的认知：</strong><br>
+          ❶ 该方法只能在<strong>一定程度</strong>下规范原型风格——不会 100% 一致，但能把漂移控制在一个可接受的范围。<br>
+          ❷ 输出效果<strong>高度依赖输入质量</strong>：Figma 设计规范越完整、产品需求文档越清晰，生成的原型就越贴近预期。反之亦然——输入模糊，输出也模糊。
+        </div>
+      </div>
+
+      <!-- Quality dependency meters -->
+      <div style="display:flex;gap:44px;margin-top:20px;">
+        <div style="flex:1;">
+          <div class="quality-meter">
+            <span class="qm-label">规范完整度</span>
+            <div class="qm-bar-bg"><div class="qm-bar-fill" style="width:75%;"></div></div>
+            <span style="font-family:var(--font-mono);font-size:11px;opacity:0.5;">高</span>
+          </div>
+          <div class="quality-meter" style="margin-top:8px;">
+            <span class="qm-label">PRD 清晰度</span>
+            <div class="qm-bar-bg"><div class="qm-bar-fill" style="width:60%;background:oklch(60% 0.12 60);"></div></div>
+            <span style="font-family:var(--font-mono);font-size:11px;opacity:0.5;">中</span>
+          </div>
+          <p style="font-family:var(--font-mono);font-size:10px;opacity:0.35;margin-top:8px;letter-spacing:0.04em;">输入质量 → 输出质量</p>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>设计规范驱动的AI原型生成</span>
+        <span>05 / 06</span>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         06 · 收束 (Dark)
+         ════════════════════════════════════════════ -->
+    <section class="slide dark" data-screen-label="06 收束" data-speaker-notes="结尾金句：设计规范不是给AI加锁，而是给AI一张地图。边界清晰，里面可以探索——但不保证每一步都走对。这是一个逐步优化的过程，规范越好，原型越准。">
+      <span class="slide-nb">06</span>
+
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;max-width:24ch;">
+        <div class="kicker">总结</div>
+
+        <div class="enriched-quote">
+          <blockquote>
+            设计规范<br>不是限制AI<br><span style="color:var(--accent);">而是给AI<br>一张地图</span>
+          </blockquote>
+        </div>
+
+        <div class="rule" style="margin-top:32px;"></div>
+
+        <p class="lead" style="margin-top:20px;max-width:28ch;color:var(--dark-muted);">
+          边界清晰，里面可以探索。<br>
+          效果取决于输入的规范质量和需求文档——<br>
+          这不是魔法，是一个逐步优化、持续迭代的过程。
+        </p>
+
+        <div style="display:flex;gap:24px;margin-top:36px;font-family:var(--font-mono);font-size:var(--fs-sm);color:var(--dark-muted);letter-spacing:0.04em;">
+          <span>谢谢</span>
+          <span class="dot-sep" style="align-self:center;background:var(--accent);"></span>
+          <span>欢迎交流</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span>设计规范驱动的AI原型生成</span>
+        <span>06 / 06</span>
+      </div>
+    </section>
+
+  </div><!-- /#deck -->
+</div><!-- /#stage -->
+
+<!-- Navigation -->
+<div id="nav-dots"></div>
+<div id="counter">01 / 06</div>
+<button id="index-toggle">ESC · 索引</button>
+<div id="index-overlay"><button class="idx-close">ESC 关闭</button></div>
+<button id="notes-toggle">N · 演讲备注</button>
+<div id="notes-panel">
+  <span class="notes-label">备注</span>
+  <span id="notes-content"></span>
 </div>
 
-<div class="demo-hint">原型演示 · 有卡状态 &nbsp;|&nbsp; 访问 <code style="font-family:monospace;font-size:11px">#empty</code> 查看空状态</div>
-
 <script>
-/* ===== Bank Data ===== */
-const bankCards = [
-  { id:1, bank:'中国工商银行', type:'储蓄卡', last4:'8892', color:'#C41230', icon:'工' },
-  { id:2, bank:'中国建设银行', type:'储蓄卡', last4:'5621', color:'#0067B8', icon:'建' },
-  { id:3, bank:'招商银行',     type:'储蓄卡', last4:'3478', color:'#B41F32', icon:'招' },
-  { id:4, bank:'中国银行',     type:'借记卡', last4:'1903', color:'#AD182D', icon:'中' },
-  { id:5, bank:'中国农业银行', type:'储蓄卡', last4:'7256', color:'#00957D', icon:'农' },
-];
+/* ============================================================
+   Clean Deck — Scale, Nav, Notes
+   ============================================================ */
+(function() {
+  const SLIDE_COUNT = 6;
+  const SW = 1920, SH = 1080;
+  const DUR = 500;
 
-/* ===== DOM ===== */
-const cardList        = document.getElementById('cardList');
-const cardListDivider = document.getElementById('cardListDivider');
-const addCardRow      = document.getElementById('addCardRow');
-const emptyState      = document.getElementById('emptyState');
-const btnConfirm      = document.getElementById('btnConfirm');
-const btnLabel        = document.getElementById('btnLabel');
-const toast           = document.getElementById('toast');
-const successPanel    = document.getElementById('successPanel');
-const successIcon     = document.getElementById('successIcon');
-const successCard     = document.getElementById('successCard');
-const btnSuccessClose = document.getElementById('btnSuccessClose');
-const btnBack         = document.getElementById('btnBack');
+  const stage   = document.getElementById('stage');
+  const deck    = document.getElementById('deck');
+  const slides  = deck.querySelectorAll('.slide');
+  const dotsCtr = document.getElementById('nav-dots');
+  const counter = document.getElementById('counter');
+  const idxToggle = document.getElementById('index-toggle');
+  const idxOverlay = document.getElementById('index-overlay');
+  const idxClose = idxOverlay.querySelector('.idx-close');
+  const notesToggle = document.getElementById('notes-toggle');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesContent = document.getElementById('notes-content');
 
-/* ===== State ===== */
-let selectedCardId = null;
-let isConfirming   = false;
-const isEmptyMode  = window.location.hash === '#empty';
+  let current = 0;
+  let notesOpen = false;
 
-function init() {
-  if (isEmptyMode) {
-    showEmptyState();
-  } else {
-    showHasCardsState();
+  // Build dots + index
+  for (let i = 0; i < SLIDE_COUNT; i++) {
+    const btn = document.createElement('button');
+    btn.addEventListener('click', () => goTo(i));
+    dotsCtr.appendChild(btn);
+
+    const label = slides[i].dataset.screenLabel || `Slide ${i + 1}`;
+    const item = document.createElement('div');
+    item.className = 'idx-item';
+    item.innerHTML = `<span class="idx-nb">${String(i + 1).padStart(2,'0')}</span> ${label}`;
+    item.addEventListener('click', () => { goTo(i); closeIndex(); });
+    idxOverlay.appendChild(item);
   }
-}
 
-function showHasCardsState() {
-  cardList.classList.remove('hidden');
-  cardListDivider.classList.remove('hidden');
-  addCardRow.classList.remove('hidden');
-  emptyState.classList.remove('visible');
-  btnConfirm.classList.add('disabled');
-  btnConfirm.classList.remove('active','loading');
-  btnLabel.textContent = '请选择退款卡';
-  selectedCardId = null;
+  function resize() {
+    const s = Math.min(window.innerWidth / SW, window.innerHeight / SH);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  window.addEventListener('resize', resize);
+  resize();
 
-  cardList.querySelectorAll('.bank-card').forEach(c => c.remove());
+  function goTo(i) {
+    if (i < 0 || i >= SLIDE_COUNT) return;
+    current = i;
+    deck.style.transform = `translateX(${-current * SW}px)`;
+    updateUI();
+    updateNotes();
+    localStorage.setItem('clean-deck-pos', current);
+  }
 
-  bankCards.forEach(card => {
-    const el = document.createElement('div');
-    el.className = 'bank-card';
-    el.dataset.cardId = card.id;
-    el.innerHTML = `
-      <div class="bank-icon" style="background:${card.color}">${card.icon}</div>
-      <div class="bank-info">
-        <div class="bank-name">${card.bank}</div>
-        <div class="bank-number">${card.type} &nbsp;**** ${card.last4}</div>
-      </div>
-      <div class="radio-btn"></div>
-    `;
-    el.addEventListener('click', () => selectCard(card.id, el));
-    cardList.appendChild(el);
+  function updateUI() {
+    const btns = dotsCtr.querySelectorAll('button');
+    btns.forEach((b, j) => b.classList.toggle('active', j === current));
+    counter.textContent = `${String(current + 1).padStart(2,'0')} / ${String(SLIDE_COUNT).padStart(2,'0')}`;
+  }
+
+  function updateNotes() {
+    notesContent.textContent = slides[current].dataset.speakerNotes || '';
+  }
+
+  function toggleNotes() {
+    notesOpen = !notesOpen;
+    notesPanel.classList.toggle('open', notesOpen);
+    notesToggle.classList.toggle('active', notesOpen);
+    notesToggle.textContent = notesOpen ? 'N · 关闭备注' : 'N · 演讲备注';
+  }
+
+  function openIndex() { idxOverlay.classList.add('open'); }
+  function closeIndex() { idxOverlay.classList.remove('open'); }
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goTo(current + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goTo(current - 1); }
+    else if (e.key === 'Escape') { idxOverlay.classList.contains('open') ? closeIndex() : openIndex(); }
+    else if (e.key === 'n' || e.key === 'N') { toggleNotes(); }
   });
-}
 
-function showEmptyState() {
-  cardList.classList.add('hidden');
-  cardListDivider.classList.add('hidden');
-  addCardRow.classList.add('hidden');
-  emptyState.classList.add('visible');
-  btnConfirm.classList.remove('disabled','loading');
-  btnConfirm.classList.add('active');
-  btnLabel.textContent = '去绑卡';
-  selectedCardId = null;
-}
+  // Scroll
+  let wheelTimer;
+  window.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (wheelTimer) return;
+    wheelTimer = setTimeout(() => { wheelTimer = null; }, 800);
+    e.deltaY > 0 || e.deltaX > 0 ? goTo(current + 1) : goTo(current - 1);
+  }, { passive: false });
 
-function selectCard(id, el) {
-  if (isConfirming) return;
-  document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedCardId = id;
-
-  btnConfirm.classList.remove('disabled');
-  btnConfirm.classList.add('active');
-  btnLabel.textContent = '确认退款到该卡';
-
-  el.style.transform = 'scale(0.97)';
-  setTimeout(() => { el.style.transform = ''; }, 120);
-}
-
-addCardRow.addEventListener('click', () => {
-  if (isConfirming) return;
-  isConfirming = true;
-  btnConfirm.classList.add('loading');
-  btnLabel.textContent = '前往绑卡…';
-
-  setTimeout(() => {
-    btnConfirm.classList.remove('loading');
-    btnLabel.textContent = selectedCardId ? '确认退款到该卡' : '请选择退款卡';
-    if (!selectedCardId) {
-      btnConfirm.classList.add('disabled');
-      btnConfirm.classList.remove('active');
+  // Touch
+  let tx = 0;
+  window.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; });
+  window.addEventListener('touchend', (e) => {
+    if (Math.abs(e.changedTouches[0].clientX - tx) > 60) {
+      e.changedTouches[0].clientX < tx ? goTo(current + 1) : goTo(current - 1);
     }
-    showToast('正在前往绑卡页面…');
-    isConfirming = false;
-  }, 800);
-});
+  });
 
-btnConfirm.addEventListener('click', () => {
-  if (isConfirming) return;
+  idxToggle.addEventListener('click', openIndex);
+  idxClose.addEventListener('click', closeIndex);
+  notesToggle.addEventListener('click', toggleNotes);
+  idxOverlay.addEventListener('click', (e) => { if (e.target === idxOverlay) closeIndex(); });
 
-  if (isEmptyMode) {
-    handleGoBindCard();
-    return;
-  }
+  // Restore
+  const saved = localStorage.getItem('clean-deck-pos');
+  if (saved !== null) { const p = parseInt(saved, 10); if (p >= 0 && p < SLIDE_COUNT) current = p; }
+  deck.style.transition = 'none';
+  deck.style.transform = `translateX(${-current * SW}px)`;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      deck.style.transition = `transform ${DUR}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+    });
+  });
+  updateUI();
+  updateNotes();
 
-  if (selectedCardId === null) return;
-  const card = bankCards.find(c => c.id === selectedCardId);
-  if (!card) return;
-
-  isConfirming = true;
-  btnConfirm.classList.add('loading');
-  btnLabel.textContent = '处理中…';
-
-  setTimeout(() => {
-    btnConfirm.classList.remove('loading');
-    btnLabel.textContent = '确认退款到该卡';
-    showSuccessPanel(card);
-  }, 900);
-});
-
-function handleGoBindCard() {
-  isConfirming = true;
-  btnConfirm.classList.add('loading');
-  btnLabel.textContent = '前往绑卡…';
-
-  setTimeout(() => {
-    btnConfirm.classList.remove('loading');
-    btnLabel.textContent = '去绑卡';
-    showToast('正在前往绑卡页面…');
-    isConfirming = false;
-  }, 800);
-}
-
-function showSuccessPanel(card) {
-  successIcon.style.background = card.color;
-  successIcon.textContent = card.icon;
-  successCard.innerHTML = `
-    <div class="mini-icon" style="background:${card.color}">${card.icon}</div>
-    <div class="mini-info">
-      <div class="mini-name">${card.bank}</div>
-      <div class="mini-num">${card.type} ···· ${card.last4}</div>
-    </div>
-  `;
-  successPanel.classList.add('show');
-}
-
-btnSuccessClose.addEventListener('click', () => {
-  successPanel.classList.remove('show');
-  selectedCardId = null;
-  isConfirming = false;
-  btnConfirm.classList.add('disabled');
-  btnConfirm.classList.remove('active','loading');
-  btnLabel.textContent = '请选择退款卡';
-  document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
-});
-
-successPanel.querySelector('.success-panel-backdrop').addEventListener('click', () => {
-  btnSuccessClose.click();
-});
-
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.className = 'toast show';
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => { toast.classList.remove('show'); }, 1800);
-}
-
-btnBack.addEventListener('click', () => {
-  if (isConfirming) return;
-  showToast('返回上一页');
-});
-
-document.addEventListener('keydown', (e) => {
-  if (!isEmptyMode) {
-    if (e.key >= '1' && e.key <= '5' && bankCards[parseInt(e.key)-1]) {
-      const el = document.querySelector(`.bank-card[data-card-id="${e.key}"]`);
-      if (el) selectCard(parseInt(e.key), el);
-    }
-  }
-  if (e.key === 'Enter' && !isConfirming) {
-    btnConfirm.click();
-  }
-});
-
-init();
+  if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+})();
 </script>
-
-
-</body></html>
+</body>
+</html>
